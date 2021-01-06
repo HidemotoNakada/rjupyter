@@ -72,7 +72,8 @@ class ProcManager(object):
             os.kill(pid, signal.SIGTERM)
 
 class CmdErrorException(Exception):
-    pass
+    def __init__(self, msg):
+        self.msg = msg
 
 def gen_ack(code, val=None):
     return {"code": code, "val": val}
@@ -96,6 +97,8 @@ class Cmd(object):
             return gen_ack("OK", res)
         if cmd == "test":
             return gen_ack("OK")
+        if cmd == "stop":
+            raise CmdErrorException('stopped')
 
     def start_jupyter(self):
         jupyter = JupyterStub()
@@ -106,6 +109,7 @@ def main():
     logger.info('startup.')
 
     pm = ProcManager()
+
     try:
         while True:
             cmd = Cmd(sys.stdin.readline())

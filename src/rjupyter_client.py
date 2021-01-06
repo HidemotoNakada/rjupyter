@@ -5,6 +5,7 @@ import subprocess
 import socketserver
 import threading
 import tempfile
+import time
 from pathlib import Path
 
 FORMAT='%(asctime)s CLIENT %(message)s'
@@ -15,6 +16,7 @@ logger.setLevel(logging.INFO)
 DEFAULT_SERVER="localhost"
 SSH_COMMAND="ssh"
 SSH_OPTIONS={"controlmaster":"auto", "controlpath":None}
+#RJUPYTER_SERVER="rjupyter/src/rjupyter_server"
 RJUPYTER_SERVER="rjupyter_server"
 RCWD="."
 
@@ -51,8 +53,6 @@ class ServerStub(object):
         self.redirect_thtread = threading.Thread(target=self.redirect_stderr)
         self.redirect_thtread.start()
 
-    def invoke_jupyter(self):
-        return ("localhost", 8888)
     def test(self):
         test_cmd_dict = {"cmd":"test"}
         self.send(test_cmd_dict)
@@ -81,6 +81,9 @@ class ServerStub(object):
             self.server
             ]
         )
+    def stop(self):
+        cmd_dict = {"cmd":"stop"}
+        self.send(cmd_dict)
 
     def send(self, cmd_dict):
         cmd_str = json.dumps(cmd_dict).encode()
@@ -131,11 +134,12 @@ def main():
         "cwd": RCWD
     })
     server.exec()
-#    host_port = server.invoke_jupyter()
     local_port = find_vacant_port(9000, 100)
     logger.info("found local port %s", local_port)
+    time.sleep(10)
+    server.stop()
     server.add_forward(local_port)
-    open_browser(local_port, server.token)
+#    open_browser(local_port, server.token)
 
 if __name__ == "__main__":
     main()
