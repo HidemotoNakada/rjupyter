@@ -1,3 +1,4 @@
 #!/bin/bash
-python rjupyter_server.py
+DIR="`dirname \"$0\"`"
+python "$DIR/rjupyter_server.py"
 
