@@ -23,6 +23,7 @@ class JupyterStub(object):
 
     def start(self, cmd_dict):
         if "cwd" in values.keys():
+            logger.info("change cwd: %s", values["cwd"])
             os.chdir(values["cwd"])
         self.proc = subprocess.Popen(
                         [JUPYTER_CMD, "notebook"], 

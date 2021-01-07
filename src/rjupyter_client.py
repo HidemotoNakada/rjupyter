@@ -7,17 +7,28 @@ import threading
 import tempfile
 import time
 from pathlib import Path
+import argparse
+DEFAULT_SERVER="sss"
+RJUPYTER_SERVER="rjupyter_server"
+
+parser = argparse.ArgumentParser('python rjupyter_client.py')
+parser.add_argument('server', type=str, default=DEFAULT_SERVER,
+                    help='target host')
+parser.add_argument('--cwd', type=str, default='.',
+                    help='target directory to open the notebook')
+parser.add_argument('--server_command', type=str, default=RJUPYTER_SERVER,
+                    help='path to the server_side script(rjupyter_server)')
+args = parser.parse_args()
+print(args.cwd)
 
 FORMAT='%(asctime)s CLIENT %(message)s'
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('mainlogger')
 logger.setLevel(logging.INFO)
 
-DEFAULT_SERVER="sss"
 #DEFAULT_SERVER="localhost"
 SSH_COMMAND="ssh"
 SSH_OPTIONS={"controlmaster":"auto", "controlpath":None}
-RJUPYTER_SERVER="rjupyter/src/rjupyter_server"
 #RJUPYTER_SERVER="rjupyter_server"
 RCWD="."
 
@@ -43,7 +54,7 @@ class ServerStub(object):
         self.sock_file = gen_sock_file()
         opts = gen_ssh_options(self.sock_file)
         self.proc = subprocess.Popen(
-                        [SSH_COMMAND, *opts, server, RJUPYTER_SERVER], 
+                        [SSH_COMMAND, *opts, server, args.server_command], 
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE
@@ -129,18 +140,18 @@ def open_browser(port, tokenstring):
     )
 
 def main():
-    server = ServerStub(DEFAULT_SERVER)
+    server = ServerStub(args.server)
     server.test()
     server.set({
-        "cwd": RCWD
+        "cwd": args.cwd
     })
     server.exec()
     local_port = find_vacant_port(9000, 100)
     logger.info("found local port %s", local_port)
-    time.sleep(10)
-    server.stop()
+#    time.sleep(10)
+#    server.stop()
     server.add_forward(local_port)
-#    open_browser(local_port, server.token)
+    open_browser(local_port, server.token)
 
 if __name__ == "__main__":
     main()
