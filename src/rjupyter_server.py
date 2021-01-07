@@ -69,7 +69,9 @@ class ProcManager(object):
     def kill_all(self):
         logger.error("killing child process")
         for pid in self.pids:
+            logger.error("killing proc %d", pid)
             os.kill(pid, signal.SIGTERM)
+pm = ProcManager()
 
 class CmdErrorException(Exception):
     def __init__(self, msg):
@@ -103,12 +105,13 @@ class Cmd(object):
     def start_jupyter(self):
         jupyter = JupyterStub()
         jupyter.start({})
+        pm.add_pid(jupyter.proc.pid)
         return jupyter.find_jupyter_url()
 
 def main():
     logger.info('startup.')
 
-    pm = ProcManager()
+
 
     try:
         while True:

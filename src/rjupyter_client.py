@@ -13,11 +13,12 @@ logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('mainlogger')
 logger.setLevel(logging.INFO)
 
-DEFAULT_SERVER="localhost"
+DEFAULT_SERVER="sss"
+#DEFAULT_SERVER="localhost"
 SSH_COMMAND="ssh"
 SSH_OPTIONS={"controlmaster":"auto", "controlpath":None}
-#RJUPYTER_SERVER="rjupyter/src/rjupyter_server"
-RJUPYTER_SERVER="rjupyter_server"
+RJUPYTER_SERVER="rjupyter/src/rjupyter_server"
+#RJUPYTER_SERVER="rjupyter_server"
 RCWD="."
 
 def gen_ssh_options(sock_file):
