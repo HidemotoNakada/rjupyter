@@ -17,4 +17,6 @@ invokes jupyter notebook remotely
 ### options
 - --cwd TARGET_DIRECTORY
 - --server_command SERVER_SIDE_SCRIPT_PATH
-
+- --group_id GROUP_ID  ( for ABCI )
+- --resource_type TYPE ( for ABCI )
+- --use_qrsh            

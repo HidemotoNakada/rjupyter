@@ -10,6 +10,7 @@ from pathlib import Path
 import argparse
 DEFAULT_SERVER="sss"
 RJUPYTER_SERVER="rjupyter_server"
+DEFAULT_RESOURCE_TYPE=""
 
 parser = argparse.ArgumentParser('python rjupyter_client.py')
 parser.add_argument('server', type=str, default=DEFAULT_SERVER,
@@ -18,6 +19,13 @@ parser.add_argument('--cwd', type=str, default='.',
                     help='target directory to open the notebook')
 parser.add_argument('--server_command', type=str, default=RJUPYTER_SERVER,
                     help='path to the server_side script(rjupyter_server)')
+parser.add_argument('--group_id', type=str, default=None,
+                    help='Group Id on the cluster')
+parser.add_argument('--resource_type', type=str, default=DEFAULT_RESOURCE_TYPE,
+                    help='resource type on the cluster')
+parser.add_argument('--use_qrsh', action='store_true', 
+                    help='use qrsh to invoke jupyter notebook')
+
 args = parser.parse_args()
 print(args.cwd)
 
@@ -139,12 +147,18 @@ def open_browser(port, tokenstring):
         ]
     )
 
+def setup_dict():
+    return {
+        "cwd": args.cwd,
+        "group_id": args.group_id,
+        "resource_type": args.resource_type,
+        "use_qrsh": args.use_qrsh,
+    }
+
 def main():
     server = ServerStub(args.server)
     server.test()
-    server.set({
-        "cwd": args.cwd
-    })
+    server.set(setup_dict())
     server.exec()
     local_port = find_vacant_port(9000, 100)
     logger.info("found local port %s", local_port)
