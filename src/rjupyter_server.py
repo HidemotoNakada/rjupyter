@@ -21,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 class JupyterStub(object):
     @classmethod
-    def getStub(cmd_dict):
+    def getStub(cls, cmd_dict):
         if "use_qrsh" in cmd_dict.keys() and cmd_dict["use_qrsh"]:
             return ABCIJupyterStub(cmd_dict)
         return DirectJupyterStub(cmd_dict)
@@ -145,7 +145,7 @@ def main():
     except json.decoder.JSONDecodeError as e:
         logger.error('failed to parse : %s', e.msg)
     except Exception as e:
-        logger.error('unknown error : %s', e.msg)
+        logger.error('unknown error : %s', e)
     pm.kill_all()
 
 def test():
