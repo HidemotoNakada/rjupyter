@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 class JupyterStub(object):
     @classmethod
     def getStub(cmd_dict):
-        if "use_qrsh" in self.cmd_dict.keys() and self.cmd_dict["use_qrsh"]:
+        if "use_qrsh" in cmd_dict.keys() and cmd_dict["use_qrsh"]:
             return ABCIJupyterStub(cmd_dict)
         return DirectJupyterStub(cmd_dict)
 
