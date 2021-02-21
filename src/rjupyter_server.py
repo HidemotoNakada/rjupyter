@@ -15,10 +15,6 @@ logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('mainlogger')
 logger.setLevel(logging.INFO)
 
-
-
-
-
 class JupyterStub(object):
     @classmethod
     def getStub(cls, cmd_dict):
@@ -35,6 +31,9 @@ class JupyterStub(object):
 
     def kill_jupyter(self):
         logger.error("kill_jupyter: not implemented")
+    
+    def _gen_url_dict(self, o):
+        logger.error("_gen_url_dict: not implemented")
 
     def find_jupyter_url(self):
         pick_next = False
@@ -49,7 +48,7 @@ class JupyterStub(object):
                 pick_next = True
         self.redirect_thtread = threading.Thread(target=self._redirect_stderr)
         self.redirect_thtread.start()            
-        return {"port": o.port, "host": "localhost", "token": o.query}
+        return self._gen_url_dict(o)
 
     def _redirect_stderr(self):
         while True:
@@ -79,8 +78,41 @@ class DirectJupyterStub(JupyterStub):
     def kill_jupyter(self):
         self.proc.kill()
 
+    def _gen_url_dict(self, o):
+        return {"port": o.port, "host": "localhost", "token": o.query}
+
 class ABCIJupyterStub(JupyterStub):
-    pass
+    """
+    to invoke jupyter with UGE the following command is required
+    qrsh -g $GROUP -l rt_C.small=1 bash -c "'. .bashrc; jupyter notebook'"
+    """
+    
+    def __init__(self, cmd_dict):
+        super().__init__(cmd_dict)
+    def _setup_string(self):
+        return "'. .bashrc; cd {:s}; {:s} notebook'".format(self.cmd_dict["cwd"], JUPYTER_CMD)
+
+    def start(self):
+        arg_str = self._setup_string()
+        logger.info("str: %s", arg_str)
+        cmd_array = ["qrsh", 
+                    "-g", self.cmd_dict["group_id"],
+                    "-l", self.cmd_dict["resource_type"]+"=1",
+                    "bash", "-c", arg_str]
+        self.proc = subprocess.Popen(
+                        cmd_array,   
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )   
+        self.from_jupyter = self.proc.stdout
+        self.jupyter_err = self.proc.stderr   
+        atexit.register(self.kill_jupyter)
+
+    def kill_jupyter(self):
+        self.proc.kill()
+
+    def _gen_url_dict(self, o):
+        return {"port": o.port, "host": o.hostname, "token": o.query}
 
 
 class ProcManager(object):

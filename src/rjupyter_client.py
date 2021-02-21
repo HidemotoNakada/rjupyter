@@ -10,7 +10,7 @@ from pathlib import Path
 import argparse
 DEFAULT_SERVER="sss"
 RJUPYTER_SERVER="rjupyter_server"
-DEFAULT_RESOURCE_TYPE=""
+DEFAULT_RESOURCE_TYPE="rt_C.small"
 
 parser = argparse.ArgumentParser('python rjupyter_client.py')
 parser.add_argument('server', type=str, default=DEFAULT_SERVER,
