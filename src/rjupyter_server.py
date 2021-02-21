@@ -15,28 +15,26 @@ logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('mainlogger')
 logger.setLevel(logging.INFO)
 
-values = {}
+
+
+
 
 class JupyterStub(object):
-    def __init__(self):
-        pass
+    @classmethod
+    def getStub(cmd_dict):
+        if "use_qrsh" in self.cmd_dict.keys() and self.cmd_dict["use_qrsh"]:
+            return ABCIJupyterStub(cmd_dict)
+        return DirectJupyterStub(cmd_dict)
 
-    def start(self, cmd_dict):
-        if "cwd" in values.keys():
-            logger.info("change cwd: %s", values["cwd"])
-            os.chdir(values["cwd"])
-        self.proc = subprocess.Popen(
-                        [JUPYTER_CMD, "notebook"], 
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
-                    )   
-        self.from_jupyter = self.proc.stdout
-        self.jupyter_err = self.proc.stderr   
-        self.redirect_thtread = threading.Thread(target=self.redirect_stderr)
-        atexit.register(self.kill_jupyter)
+    def __init__(self, cmd_dict):
+        self.cmd_dict = cmd_dict
+        self.jupyter_err = None
+
+    def start(self):
+        logger.error("start: not implemented")
 
     def kill_jupyter(self):
-        self.proc.kill()
+        logger.error("kill_jupyter: not implemented")
 
     def find_jupyter_url(self):
         pick_next = False
@@ -49,10 +47,11 @@ class JupyterStub(object):
                 break                 
             if "The Jupyter Notebook is running at:" in line:
                 pick_next = True
+        self.redirect_thtread = threading.Thread(target=self._redirect_stderr)
         self.redirect_thtread.start()            
         return {"port": o.port, "host": "localhost", "token": o.query}
 
-    def redirect_stderr(self):
+    def _redirect_stderr(self):
         while True:
             one_line = self.jupyter_err.readline().decode().strip()
             logger.info("stderr: %s", one_line)
@@ -60,6 +59,28 @@ class JupyterStub(object):
                 break
 #            sys.stderr.write(one_line)
 #            sys.stderr.flush()            
+
+class DirectJupyterStub(JupyterStub):
+    def __init__(self, cmd_dict):
+        super().__init__(cmd_dict)
+    def start(self):
+        if "cwd" in self.cmd_dict.keys():
+            logger.info("change cwd: %s", self.cmd_dict["cwd"])
+            os.chdir(self.cmd_dict["cwd"])
+        self.proc = subprocess.Popen(
+                        [JUPYTER_CMD, "notebook"], 
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )   
+        self.from_jupyter = self.proc.stdout
+        self.jupyter_err = self.proc.stderr   
+        atexit.register(self.kill_jupyter)
+
+    def kill_jupyter(self):
+        self.proc.kill()
+
+class ABCIJupyterStub(JupyterStub):
+    pass
 
 
 class ProcManager(object):
@@ -80,6 +101,8 @@ class CmdErrorException(Exception):
 
 def gen_ack(code, val=None):
     return {"code": code, "val": val}
+
+values = {}
 
 class Cmd(object):
     def __init__(self, json_string):
@@ -104,15 +127,13 @@ class Cmd(object):
             raise CmdErrorException('stopped')
 
     def start_jupyter(self):
-        jupyter = JupyterStub()
-        jupyter.start({})
+        jupyter = JupyterStub.getStub(values)
+        jupyter.start()
         pm.add_pid(jupyter.proc.pid)
         return jupyter.find_jupyter_url()
 
 def main():
     logger.info('startup.')
-
-
 
     try:
         while True:
@@ -128,8 +149,8 @@ def main():
     pm.kill_all()
 
 def test():
-    jupyter = JupyterStub()
-    jupyter.start({})
+    jupyter = JupyterStub.getStub(values)
+    jupyter.start()
     print(jupyter.find_jupyter_url())
 
 if __name__ == "__main__":
