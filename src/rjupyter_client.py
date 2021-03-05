@@ -87,11 +87,14 @@ class ServerStub(object):
         cmd_dict = {"cmd":"exec"}
         self.send(cmd_dict)
         ack = self.recv()
-        assert(ack["code"] == "OK")
+        if ack["code"] != "OK":
+            logger.error("exec failed %s", ack["val"])
+            return False
         logger.info("port:%s", ack["val"]["port"])
         self.target_port = ack["val"]["port"]
         self.target_host = ack["val"]["host"]
         self.token = ack["val"]["token"]
+        return True
 
     def add_forward(self, local_port):
         subprocess.run(
@@ -104,6 +107,12 @@ class ServerStub(object):
     def stop(self):
         cmd_dict = {"cmd":"stop"}
         self.send(cmd_dict)
+
+    def shutdown_client(self):
+        logger.info("shutting down..")
+        if self.proc:
+            self.proc.kill()
+
 
     def send(self, cmd_dict):
         cmd_str = json.dumps(cmd_dict).encode()
@@ -159,13 +168,16 @@ def main():
     server = ServerStub(args.server)
     server.test()
     server.set(setup_dict())
-    server.exec()
-    local_port = find_vacant_port(9000, 100)
-    logger.info("found local port %s", local_port)
-#    time.sleep(10)
-#    server.stop()
-    server.add_forward(local_port)
-    open_browser(local_port, server.token)
+    if server.exec():
+        local_port = find_vacant_port(9000, 100)
+        logger.info("found local port %s", local_port)
+        server.add_forward(local_port)
+        open_browser(local_port, server.token)
+    else:
+        server.stop()
+        time.sleep(1)
+        server.shutdown_client()
+
 
 if __name__ == "__main__":
     main()

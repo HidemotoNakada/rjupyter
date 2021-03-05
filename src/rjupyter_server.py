@@ -39,6 +39,9 @@ class JupyterStub(object):
         pick_next = False
         while True:
             line = self.jupyter_err.readline().decode().strip()
+            if len(line) == 0:
+                logger.error("failed to get jupyter url")
+                return None
             logger.info(line)
             if pick_next:
                 tokens = line.split()
@@ -152,6 +155,8 @@ class Cmd(object):
             return gen_ack("OK")
         if cmd == "exec":
             res = self.start_jupyter()
+            if res == None:
+                return gen_ack("NG", "failed to start jupyter")
             return gen_ack("OK", res)
         if cmd == "test":
             return gen_ack("OK")
@@ -176,6 +181,8 @@ def main():
             sys.stdout.flush()
     except json.decoder.JSONDecodeError as e:
         logger.error('failed to parse : %s', e.msg)
+    except CmdErrorException as e:
+        logger.error('stop requested')
     except Exception as e:
         logger.error('unknown error : %s', e)
     pm.kill_all()
