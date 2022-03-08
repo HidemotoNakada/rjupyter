@@ -87,13 +87,13 @@ class DirectJupyterStub(JupyterStub):
 class ABCIJupyterStub(JupyterStub):
     """
     to invoke jupyter with UGE the following command is required
-    qrsh -g $GROUP -l rt_C.small=1 bash -c "'. .bashrc; jupyter notebook'"
+    qrsh -g $GROUP -l rt_C.small=1 bash -c ". .bashrc; jupyter notebook"
     """
     
     def __init__(self, cmd_dict):
         super().__init__(cmd_dict)
     def _setup_string(self):
-        return "'. .bashrc; cd {:s}; {:s} notebook'".format(self.cmd_dict["cwd"], JUPYTER_CMD)
+        return ". .bashrc; cd {:s}; {:s} notebook".format(self.cmd_dict["cwd"], JUPYTER_CMD)
 
     def start(self):
         arg_str = self._setup_string()
@@ -101,6 +101,7 @@ class ABCIJupyterStub(JupyterStub):
         cmd_array = ["qrsh", 
                     "-g", self.cmd_dict["group_id"],
                     "-l", self.cmd_dict["resource_type"]+"=1",
+                    "-l", "h_rt="+self.cmd_dict["duration"],
                     "bash", "-c", arg_str]
         self.proc = subprocess.Popen(
                         cmd_array,   

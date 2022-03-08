@@ -25,6 +25,10 @@ parser.add_argument('--resource_type', type=str, default=DEFAULT_RESOURCE_TYPE,
                     help='resource type on the cluster')
 parser.add_argument('--use_qrsh', action='store_true', 
                     help='use qrsh to invoke jupyter notebook')
+parser.add_argument('--duration', type=str, default="01:00:00",
+                    help='maximum running time for ABCI')
+parser.add_argument('--vscode', action='store_true', 
+                    help='generate vscode conf file. does not open browser')                    
 
 args = parser.parse_args()
 print(args.cwd)
@@ -155,12 +159,27 @@ def open_browser(port, tokenstring):
             "http://localhost:%d/?%s"%(port,tokenstring)
         ]
     )
+def gen_vscode_conf(port, tokenstring):
+    urlstr =  "http://localhost:%d/?%s"%(port,tokenstring)
+    jupyter_key = "python.dataScience.jupyterServerURI"
+    Path(".vscode").mkdir(exist_ok=True)
+    settings = Path(".vscode/settings.json")
+    if settings.exists():
+        with open(settings, "r") as f:
+            sdict = json.load(f)
+    else:
+        sdict = {}
+    sdict[jupyter_key] = urlstr
+    with open(settings, "w") as f:
+        json.dump(sdict, f)
+    
 
 def setup_dict():
     return {
         "cwd": args.cwd,
         "group_id": args.group_id,
         "resource_type": args.resource_type,
+        "duration": args.duration,
         "use_qrsh": args.use_qrsh,
     }
 
@@ -172,7 +191,10 @@ def main():
         local_port = find_vacant_port(9000, 100)
         logger.info("found local port %s", local_port)
         server.add_forward(local_port)
-        open_browser(local_port, server.token)
+        if not args.vscode:
+            open_browser(local_port, server.token)
+        else:
+            gen_vscode_conf(local_port, server.token)
     else:
         server.stop()
         time.sleep(1)
