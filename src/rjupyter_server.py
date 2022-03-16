@@ -102,7 +102,7 @@ class ABCIJupyterStub(JupyterStub):
                     "-g", self.cmd_dict["group_id"],
                     "-l", self.cmd_dict["resource_type"]+"="+str(self.cmd_dict["num_nodes"]),
                     "-l", "h_rt="+self.cmd_dict["duration"],
-                    "-l", "USE_SSH=1"
+                    "-l", "USE_SSH=1",
                     "bash", "-c", arg_str]
         self.proc = subprocess.Popen(
                         cmd_array,   
