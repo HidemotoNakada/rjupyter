@@ -23,6 +23,8 @@ parser.add_argument('--group_id', type=str, default=None,
                     help='Group Id on the cluster')
 parser.add_argument('--resource_type', type=str, default=DEFAULT_RESOURCE_TYPE,
                     help='resource type on the cluster')
+parser.add_argument('--num_nodes', type=int, default=1,
+                    help='number of nodes')
 parser.add_argument('--use_qrsh', action='store_true', 
                     help='use qrsh to invoke jupyter notebook')
 parser.add_argument('--duration', type=str, default="01:00:00",
