@@ -183,6 +183,7 @@ def setup_dict():
         "resource_type": args.resource_type,
         "duration": args.duration,
         "use_qrsh": args.use_qrsh,
+        "num_nodes": args.num_nodes,
     }
 
 def main():

@@ -100,7 +100,7 @@ class ABCIJupyterStub(JupyterStub):
         logger.info("str: %s", arg_str)
         cmd_array = ["qrsh", 
                     "-g", self.cmd_dict["group_id"],
-                    "-l", self.cmd_dict["resource_type"]+"="+self.cmd_dict["num_nodes"],
+                    "-l", self.cmd_dict["resource_type"]+"="+str(self.cmd_dict["num_nodes"]),
                     "-l", "h_rt="+self.cmd_dict["duration"],
                     "bash", "-c", arg_str]
         self.proc = subprocess.Popen(
