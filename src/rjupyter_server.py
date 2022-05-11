@@ -98,12 +98,13 @@ class ABCIJupyterStub(JupyterStub):
     def start(self):
         arg_str = self._setup_string()
         logger.info("str: %s", arg_str)
-        cmd_array = ["qrsh", 
-                    "-g", self.cmd_dict["group_id"],
-                    "-l", self.cmd_dict["resource_type"]+"="+str(self.cmd_dict["num_nodes"]),
-                    "-l", "h_rt="+self.cmd_dict["duration"],
-                    "-l", "USE_SSH="+("1" if self.cmd_dict["use_qrsh_ssh"] else "0"),
-                    "bash", "-c", arg_str]
+        cmd_array  = ["qrsh"],
+        cmd_array += ["-g", self.cmd_dict["group_id"]]
+        cmd_array += ["-l", self.cmd_dict["resource_type"]+"="+str(self.cmd_dict["num_nodes"])]
+        cmd_array += ["-l", "h_rt="+self.cmd_dict["duration"]]
+        if self.cmd_dict["use_qrsh_ssh"]:
+            cmd_array += ["-l", "USE_SSH=1"]
+        cmd_array += ["bash", "-c", arg_str]
         self.proc = subprocess.Popen(
                         cmd_array,   
                         stdout=subprocess.PIPE,
