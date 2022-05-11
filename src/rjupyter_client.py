@@ -27,6 +27,8 @@ parser.add_argument('--num_nodes', type=int, default=1,
                     help='number of nodes')
 parser.add_argument('--use_qrsh', action='store_true', 
                     help='use qrsh to invoke jupyter notebook')
+parser.add_argument('--use_qrsh_ssh', action='store_true', default=False, 
+                    help='use USE_SSH flag when invoke jupyter notebook')
 parser.add_argument('--duration', type=str, default="01:00:00",
                     help='maximum running time for ABCI')
 parser.add_argument('--vscode', action='store_true', 
@@ -183,6 +185,7 @@ def setup_dict():
         "resource_type": args.resource_type,
         "duration": args.duration,
         "use_qrsh": args.use_qrsh,
+        "use_qrsh_ssh": args.use_qrsh_ssh,
         "num_nodes": args.num_nodes,
     }
 
