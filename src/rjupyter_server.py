@@ -98,7 +98,7 @@ class ABCIJupyterStub(JupyterStub):
     def start(self):
         arg_str = self._setup_string()
         logger.info("str: %s", arg_str)
-        cmd_array  = ["qrsh"],
+        cmd_array  = ["qrsh"]
         cmd_array += ["-g", self.cmd_dict["group_id"]]
         cmd_array += ["-l", self.cmd_dict["resource_type"]+"="+str(self.cmd_dict["num_nodes"])]
         cmd_array += ["-l", "h_rt="+self.cmd_dict["duration"]]
