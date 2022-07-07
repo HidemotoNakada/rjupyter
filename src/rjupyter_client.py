@@ -11,6 +11,7 @@ import argparse
 DEFAULT_SERVER="sss"
 RJUPYTER_SERVER="rjupyter_server"
 DEFAULT_RESOURCE_TYPE="rt_C.small"
+SERVER_FILE_NAME="rjupyter_server.py"
 
 parser = argparse.ArgumentParser('python rjupyter_client.py')
 parser.add_argument('server', type=str, default=DEFAULT_SERVER,
@@ -19,6 +20,8 @@ parser.add_argument('--cwd', type=str, default='.',
                     help='target directory to open the notebook')
 parser.add_argument('--server_command', type=str, default=RJUPYTER_SERVER,
                     help='path to the server_side script(rjupyter_server)')
+parser.add_argument('--server_python', type=str, default="python",
+                    help='server_side python binary (used for push_server_code)')
 parser.add_argument('--group_id', type=str, default=None,
                     help='Group Id on the cluster')
 parser.add_argument('--resource_type', type=str, default=DEFAULT_RESOURCE_TYPE,
@@ -27,6 +30,8 @@ parser.add_argument('--num_nodes', type=int, default=1,
                     help='number of nodes')
 parser.add_argument('--use_qrsh', action='store_true', 
                     help='use qrsh to invoke jupyter notebook')
+parser.add_argument('--push_server_code', action='store_true', 
+                    help='push server code from client')
 parser.add_argument('--use_qrsh_ssh', action='store_true', default=False, 
                     help='use USE_SSH flag when invoke jupyter notebook')
 parser.add_argument('--duration', type=str, default="01:00:00",
@@ -64,13 +69,28 @@ def gen_sock_file():
     #os.remove(f.name)
     return f.name
 
+def load_and_preprocess(filename):
+    with open(filename) as f:
+        p = [l for l in f.readlines()]
+        prog = "".join(p)
+    prog = prog.replace('"', '\\"')
+    prog = '"' + prog + '"'
+    return prog
+
 class ServerStub(object):
-    def __init__(self, server):
+    def __init__(self, server, push_flag):
         self.server = server
         self.sock_file = gen_sock_file()
         opts = gen_ssh_options(self.sock_file)
+        ssh_args = [SSH_COMMAND, *opts, server]
+        if push_flag: 
+            ssh_args.append(args.server_python)
+            ssh_args.append("-c")
+            ssh_args.append(load_and_preprocess("rjupyter_server.py"))
+        else:
+            ssh_args.append(args.server_command) 
         self.proc = subprocess.Popen(
-                        [SSH_COMMAND, *opts, server, args.server_command], 
+                        ssh_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE
@@ -80,6 +100,7 @@ class ServerStub(object):
         self.server_err = self.proc.stderr
         self.redirect_thtread = threading.Thread(target=self.redirect_stderr)
         self.redirect_thtread.start()
+
 
     def test(self):
         test_cmd_dict = {"cmd":"test"}
@@ -190,7 +211,7 @@ def setup_dict():
     }
 
 def main():
-    server = ServerStub(args.server)
+    server = ServerStub(args.server, args.push_server_code)
     server.test()
     server.set(setup_dict())
     if server.exec():

@@ -17,6 +17,16 @@ invokes jupyter notebook remotely
 ### options
 - --cwd TARGET_DIRECTORY
 - --server_command SERVER_SIDE_SCRIPT_PATH
+- --push_server_code
+    if specified push the server code.
+    In this case, you do not need to checkout on the server side
 - --group_id GROUP_ID  ( for ABCI )
 - --resource_type TYPE ( for ABCI )
 - --use_qrsh            
+
+
+### example
+
+```
+python rjupyter_client.py --use_qrsh --push_server_code --group_id xxxx --resource_type rt_C.small abci
+```
