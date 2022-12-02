@@ -47,7 +47,7 @@ class JupyterStub(object):
                 tokens = line.split()
                 o = urllib.parse.urlparse(tokens[3])
                 break                 
-            if "The Jupyter Notebook is running at:" in line:
+            if "is running at:" in line:
                 pick_next = True
         self.redirect_thtread = threading.Thread(target=self._redirect_stderr)
         self.redirect_thtread.start()            
