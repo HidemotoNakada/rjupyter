@@ -86,7 +86,8 @@ class ServerStub(object):
         if push_flag: 
             ssh_args.append(args.server_python)
             ssh_args.append("-c")
-            ssh_args.append(load_and_preprocess("rjupyter_server.py"))
+            serverfilepath = (Path(__file__).resolve().parent) / "rjupyter_server.py"
+            ssh_args.append(load_and_preprocess(str(serverfilepath)))
         else:
             ssh_args.append(args.server_command) 
         self.proc = subprocess.Popen(
