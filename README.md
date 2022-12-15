@@ -31,7 +31,7 @@ It supports [ABCI](https://abci.ai). It will allocate a node using qrsh and laun
 - --use_server_side_code
 
     Mainly for debbugging. 
-    
+
     If specified use the server code on the server.
     In this case, you need to checkout also on the server side
     and set up PATH so that the server side script is in the path.
@@ -39,6 +39,8 @@ It supports [ABCI](https://abci.ai). It will allocate a node using qrsh and laun
 - --group_id GROUP_ID  ( for ABCI )
 - --resource_type TYPE ( for ABCI )
 - --use_qrsh           ( for ABCI ) 
+- --num_nodes          ( for ABCI )
+- --duration "XX:XX:XX"( for ABCI )
 
 
 ## example
