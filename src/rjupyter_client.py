@@ -30,8 +30,8 @@ parser.add_argument('--num_nodes', type=int, default=1,
                     help='number of nodes')
 parser.add_argument('--use_qrsh', action='store_true', 
                     help='use qrsh to invoke jupyter notebook')
-parser.add_argument('--push_server_code', action='store_true', 
-                    help='push server code from client')
+parser.add_argument('--use_server_side_code', action='store_true', 
+                    help='use the server code installed on the server')
 parser.add_argument('--use_qrsh_ssh', action='store_true', default=False, 
                     help='use USE_SSH flag when invoke jupyter notebook')
 parser.add_argument('--duration', type=str, default="01:00:00",
@@ -212,7 +212,7 @@ def setup_dict():
     }
 
 def main():
-    server = ServerStub(args.server, args.push_server_code)
+    server = ServerStub(args.server, not args.use_server_side_code)
     server.test()
     server.set(setup_dict())
     if server.exec():
